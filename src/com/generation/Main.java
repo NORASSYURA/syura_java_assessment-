@@ -9,20 +9,24 @@ import com.generation.utils.PrinterHelper;
 import java.text.ParseException;
 import java.util.Scanner;
 
+import static java.lang.Integer.parseInt;
+
 public class Main
 {
 
     public static void main( String[] args )
-        throws ParseException
+            throws ParseException
     {
         StudentService studentService = new StudentService();
+
         CourseService courseService = new CourseService();
+
         Scanner scanner = new Scanner( System.in );
         int option = 0;
         do
         {
             PrinterHelper.showMainMenu();
-            option = scanner.nextInt();
+            option = scanner.nextInt(); // change here
             switch ( option )
             {
                 case 1:
@@ -43,9 +47,12 @@ public class Main
                 case 6:
                     showCoursesSummary( courseService, scanner );
                     break;
+                case 7:
+                    showPassedCourses( studentService, scanner );
+                    break;
             }
         }
-        while ( option != 7 );
+        while ( option != 8 );
     }
 
     private static void enrollStudentToCourse( StudentService studentService, CourseService courseService,
@@ -85,9 +92,64 @@ public class Main
         studentService.showSummary();
     }
 
+    //TODO (DONE) implement
     private static void gradeStudent( StudentService studentService, Scanner scanner )
     {
+        // What do we do if before we grade a student?
+        // 1. Ask for the student ID first
+        // 1.1. Check whether the student exists
+        // 2. Ask for the course ID next
+        // 2.1. find whether the student is taking the course
+        // 3. What is the grade to assign to the student?
+        // 3.1 If the student is taking the course, then we can assign a grade
 
+        System.out.println("Enter the student ID: ");
+        String studentId = scanner.next();
+        Student student = studentService.findStudent(studentId);
+
+        if ( student != null )
+        {
+            System.out.printf( "Please enter the course ID for student ID (%s): ", studentId);
+            String courseId = scanner.next();
+            boolean isAttendingCourse = student.isAttendingCourse(courseId);
+
+            if(isAttendingCourse){
+
+                System.out.printf( "Enter the score for course ID (%s): ", courseId);
+                double score = scanner.nextDouble();
+                if(score < 0 || score > 9)
+                    System.out.println("Invalid score entry");
+                else
+                    System.out.println(student.setGrade(courseId, score));
+            }
+            else{
+                System.out.println("Student is not attending this course.");
+            }
+
+        }
+        else
+        {
+            System.out.println( "Student with Id = " + studentId + " not found" );
+        }
+    }
+
+    //TODO (DONE) implement
+    private static void showPassedCourses(StudentService studentService, Scanner scanner){
+        System.out.println( "Enter student ID: " );
+        String studentId = scanner.next();
+        Student student = studentService.findStudent( studentId );
+        if ( student != null )
+        {
+            System.out.println( "Student Found: " );
+            System.out.println( student );
+
+            // Show the courses the student passed
+            studentService.showPassedCourses(student);
+        }
+        else
+        {
+            System.out.println( "Student with Id = " + studentId + " not found" );
+        }
     }
 
     private static void findStudent( StudentService studentService, Scanner scanner )
@@ -107,7 +169,7 @@ public class Main
     }
 
     private static void registerStudent( StudentService studentService, Scanner scanner )
-        throws ParseException
+            throws ParseException
     {
         Student student = PrinterHelper.createStudentMenu( scanner );
         studentService.subscribeStudent( student );
